@@ -1,7 +1,10 @@
-# NutriScan AI
+# 🥗 NutriScan AI - Intelligent Nutrition Analysis
 
-NutriScan AI is an intelligent nutrition analysis web application that allows users to scan food products and instantly get detailed nutritional information. It leverages computer vision and AI models to recognize food items and provide actionable insights.
+NutriScan AI is an intelligent web application that uses computer vision and AI to analyze food products and provide detailed nutritional insights. Simply scan food items to get instant nutritional information, health scores, and AI-powered descriptions.
 
+![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)
+![AI](https://img.shields.io/badge/AI-Powered-FF6B6B)
 ---
 
 ## 🌟 Key Features
