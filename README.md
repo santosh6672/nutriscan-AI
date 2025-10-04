@@ -88,6 +88,3 @@ NutriScan AI is an intelligent web application that uses computer vision and AI 
     ```
 
     Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000) to view NutriScan AI.
-
-## 📂 Project Structure
-
