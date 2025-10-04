@@ -1,126 +1,90 @@
-# 🥗 NutriScan AI - Intelligent Nutrition Analysis
+# NutriScan AI
 
-NutriScan AI is an intelligent web application that uses computer vision and AI to analyze food products and provide detailed nutritional insights. Simply scan food items to get instant nutritional information, health scores, and AI-powered descriptions.
+NutriScan AI is an intelligent nutrition analysis web application that allows users to scan food products and instantly get detailed nutritional information. It leverages computer vision and AI models to recognize food items and provide actionable insights.
 
-![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django)
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)
-![AI](https://img.shields.io/badge/AI-Powered-FF6B6B)
+---
 
-## ✨ Features
+## 🌟 Key Features
 
-### 🔍 Barcode Detection & Recognition
-- **YOLOv5** for accurate barcode detection in images
-- **PyZbar** for seamless barcode decoding
-- Support for multiple barcode formats
+- **Barcode Detection**: Utilizes **YOLOv5** and **PyZbar** to detect and decode barcodes from uploaded images.  
+- **Nutrition Analysis**: Provides detailed nutritional values, Nutri-Score, and health insights.  
+- **AI-powered Descriptions**: Integrates **LLaMA-3** to generate descriptive summaries for scanned products.  
+- **User Authentication**: Secure login and registration for personalized experiences.  
 
-### 📊 Comprehensive Nutrition Analysis
-- Detailed nutritional values and breakdown
-- Nutri-Score calculation for quick health assessment
-- Personalized health insights and recommendations
+---
 
-### 🤖 AI-Powered Descriptions
-- **LLaMA-3 integration** for intelligent product descriptions
-- Contextual information about food items
-- Allergy warnings and dietary information
+## 🛠 Technology Stack
 
-### 👤 User Management
-- Secure authentication system
-- Personalized scan history
-- User profiles and preferences
+- **Backend**: Django 5.2  
+- **Frontend**: HTML, CSS, JavaScript  
+- **AI/ML Models**:  
+  - **YOLOv5** for barcode detection  
+  - **PyZbar** for barcode decoding  
+  - **LLaMA-3** for product description generation  
+- **Database**: SQLite (default), easily configurable for PostgreSQL  
+- **Other Libraries**: NumPy, Pandas, OpenCV, EasyOCR, Pillow, Torch, etc.
 
-## 🛠 Tech Stack
+---
 
-**Backend Framework:** Django 5.2  
-**Database:** SQLite (Development), PostgreSQL (Production)  
-**AI/ML Models:** YOLOv5, PyZbar, LLaMA-3  
-**Computer Vision:** OpenCV, EasyOCR  
-**Additional Libraries:** NumPy, Pandas, Pillow, PyTorch  
-**Frontend:** HTML5, CSS3, JavaScript  
-**Deployment Ready:** WhiteNoise, Gunicorn, dj-database-url
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.9 or higher
-- pip (Python package manager)
-- Git
-
-### Installation
+## 🚀 Installation & Setup
 
 1. **Clone the repository**
-```bash
-git clone https://github.com/santosh6672/nutriscan-AI.git
-cd nutriscan-AI
-Create and activate virtual environment
 
-bash
-# Create virtual environment
-python -m venv venv
+    ```bash
+    git clone https://github.com/santosh6672/nutriscan-AI.git
+    cd nutriscan-AI
+    ```
 
-# Activate on Windows
-venv\Scripts\activate
+2. **Create and activate a virtual environment**
 
-# Activate on macOS/Linux
-source venv/bin/activate
-Install dependencies
+    ```bash
+    python -m venv venv
 
-bash
-pip install -r requirements.txt
-Environment Configuration
+    # Windows
+    venv\Scripts\activate
 
-bash
-# Create .env file
-cp .env.example .env
-Edit .env file with your configuration:
+    # macOS/Linux
+    source venv/bin/activate
+    ```
 
-env
-SECRET_KEY=your-generated-secret-key-here
-DEBUG=True
-DATABASE_URL=sqlite:///db.sqlite3
-HF_TOKEN=your-huggingface-token
-Database Setup
+3. **Install dependencies**
 
-bash
-# Run migrations
-python manage.py migrate
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-# Create superuser (optional)
-python manage.py createsuperuser
-Collect Static Files
+4. **Configure environment variables**
 
-bash
-python manage.py collectstatic
-Run Development Server
+    Create a `.env` file in the project root with the following:
 
-bash
-python manage.py runserver
-Visit http://127.0.0.1:8000 to access the application.
+    ```env
+    DJANGO_SECRET_KEY=your-secret-key
+    DEBUG=True
+    DATABASE_URL=sqlite:///db.sqlite3
+    HF_TOKEN=your-huggingface-token
+    ```
 
+    > **Note**: Replace `your-secret-key` with a long, random string (use Django’s `get_random_secret_key()` function). Replace `your-huggingface-token` with your Hugging Face API token.
 
-⚙️ Configuration
-Environment Variables
-SECRET_KEY: Django secret key for security
+5. **Run database migrations**
 
-DEBUG: Set to False in production
+    ```bash
+    python manage.py migrate
+    ```
 
-DATABASE_URL: Database connection string
+6. **Collect static files**
 
-HF_TOKEN: Hugging Face API token for LLaMA-3
+    ```bash
+    python manage.py collectstatic
+    ```
 
-Generating Secret Key
-python
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-🎯 Usage
-Register/Login to your account
+7. **Run the development server**
 
-Upload an image of a food product or barcode
+    ```bash
+    python manage.py runserver
+    ```
 
-Get instant analysis including:
+    Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000) to view NutriScan AI.
 
-Nutritional values
+## 📂 Project Structure
 
-Health score (Nutri-Score)
-
-AI-generated description
-
-Dietary recommendations
