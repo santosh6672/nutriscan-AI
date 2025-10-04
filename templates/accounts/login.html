@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">Welcome Back! 👋</h2>
+
+    {% if form.errors %}
+    <div class="error-message">
+        ⚠️ Invalid email or password. Please try again.
+    </div>
+    {% endif %}
+
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+
+        <!-- Email -->
+        <div class="input-group">
+            <i class="fas fa-envelope input-icon"></i>
+            {{ form.username }} <label class="input-label">Email Address</label>
+        </div>
+
+        <div class="input-group">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" name="password" class="styled-input" id="id_password" placeholder=" " required>
+            <label class="input-label" for="id_password">Password</label>
+        </div>
+
+        <!-- Options -->
+        <div class="form-options">
+            <label class="remember-me">
+                <input type="checkbox" name="remember_me">
+                <span class="checkmark"></span>
+                <span style="vertical-align: middle;">Remember me</span>
+            </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="login-btn">
+            Sign In <i class="fas fa-arrow-right"></i>
+        </button>
+
+
+        <p class="register-link">New here? <a href="{% url 'signup' %}">Create an account</a></p>
+    </form>
+</div>
+
+<script src="{% static 'js/login.js' %}"></script>
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}

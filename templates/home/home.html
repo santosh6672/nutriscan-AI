@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="home-page">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        swal("Welcome!", "{{ message|escapejs }}", "success");
+                    });
+                </script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-overlay">
+            <h1 class="hero-title">
+                Welcome to <span class="highlight">NutriScan AI</span>
+            </h1>
+            <p class="hero-subtitle">Scan. Analyze. Eat Smart.</p>
+            <a class="cta-button" href="{% url 'scan_product' %}">Start Scanning</a>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="features-section">
+        <h2>Why NutriScan AI?</h2>
+        <div class="features-container">
+
+            <div class="feature-card">
+                <i class="fas fa-barcode"></i>
+                <h3>Scan Products</h3>
+                <p>Simply scan the barcode and get instant insights into your food.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-heartbeat"></i>
+                <h3>Personalized Health</h3>
+                <p>Matches with your health profile for smart, safe eating decisions.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-brain"></i>
+                <h3>Powered by AI</h3>
+                <p>Intelligent nutritional analysis using the latest AI models.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        background: url("{% static 'images/bg.png' %}") no-repeat center center / cover;
+    }
+
+    .home-page {
+        overflow: hidden;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        text-align: center;
+        color: white;
+    }
+
+    .hero-overlay {
+        background: rgba(0, 0, 0, 0.6);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 700px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .highlight {
+        color: #00FFB7;
+    }
+
+    .hero-subtitle {
+        font-size: 1.4rem;
+        margin-bottom: 2rem;
+    }
+
+    .cta-button {
+        display: inline-block;
+        padding: 0.8rem 2rem;
+        background-color: #00FFB7;
+        color: #000;
+        font-weight: bold;
+        font-size: 1.1rem;
+        border-radius: 30px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .cta-button:hover {
+        background-color: #00e6a8;
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 5rem 2rem;
+        text-align: center;
+    }
+
+    .features-section h2 {
+        font-size: 2.2rem;
+        margin-bottom: 3rem;
+        color: #333;
+    }
+
+    .features-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        width: 280px;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .feature-card i {
+        font-size: 2.5rem;
+        color: #00FFB7;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+        font-size: 1rem;
+        color: #666;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .features-container {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-section {
+            padding: 3rem 1rem;
+            min-height: auto;
+        }
+
+        .hero-overlay {
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+    }
+</style>
+
+<!-- External Resources -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+{% endblock %}

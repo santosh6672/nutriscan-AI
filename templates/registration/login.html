@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - NutriScan AI{% endblock %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+{% endblock %}
+
+{% block content %}
+<main class="form-container" role="main">
+    <h1 class="form-title">Welcome Back! 👋</h1>
+
+    {% if form.errors %}
+    <div class="error-message" role="alert" aria-live="polite">
+        ⚠️ Invalid email or password. Please try again.
+    </div>
+    {% endif %}
+
+    <form method="post" class="auth-form" novalidate>
+        {% csrf_token %}
+
+        <!-- Email -->
+        <div class="input-group">
+            <label class="input-label" for="id_username">Email Address</label>
+            <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+            <input 
+                type="email" 
+                name="username" 
+                id="id_username" 
+                class="styled-input"
+                autocomplete="email" 
+                required
+                aria-required="true"
+                placeholder=" ">
+        </div>
+
+        <!-- Password -->
+        <div class="input-group">
+            <label class="input-label" for="id_password">Password</label>
+            <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+            <input 
+                type="password" 
+                name="password" 
+                id="id_password" 
+                class="styled-input"
+                autocomplete="current-password" 
+                required
+                aria-required="true"
+                placeholder=" ">
+            <i class="fas fa-eye toggle-password" aria-hidden="true" title="Toggle password visibility"></i>
+        </div>
+
+        <!-- Options -->
+        <div class="form-options">
+            <label class="remember-me">
+                <input type="checkbox" name="remember_me" id="id_remember_me">
+                <span class="checkmark" aria-hidden="true"></span>
+                <span>Remember me</span>
+            </label>
+            <a href="{% url 'password_reset' %}" class="forgot-password">Forgot Password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="login-btn">
+            Sign In <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+
+        <p class="register-link">
+            New here? <a href="{% url 'signup' %}">Create an account</a>
+        </p>
+    </form>
+</main>
+
+<script src="{% static 'js/login.js' %}"></script>
+{% endblock %}

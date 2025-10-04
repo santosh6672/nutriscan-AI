@@ -1,0 +1,179 @@
+/* --- Input Group & Floating Label --- */
+.input-group {
+    position: relative;
+    margin-bottom: 1.75rem;
+}
+
+.input-label {
+    position: absolute;
+    top: 0.9rem;
+    left: 2.8rem;
+    color: #64748b;
+    pointer-events: none;
+    transition: all 0.2s ease-out;
+    background-color: #f8fafc;
+    padding: 0 0.25rem;
+}
+
+.styled-input,
+#weight-display-input,
+#height-cm-display-input,
+#height-ft-display-input,
+#height-in-display-input {
+    width: 100%;
+    padding: 0.9rem 1rem 0.9rem 3.2rem; /* Increased left padding for better visibility */
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+    appearance: none;
+    color: #1e293b; /* Ensure text is dark and visible */
+}
+
+.styled-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    background: white;
+    outline: none;
+}
+
+/* Floating label effect */
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 0.95rem;
+    transform: translateY(0);
+    color: #94a3b8;
+    z-index: 1;
+    transition: color 0.3s ease;
+}
+
+.styled-input:focus ~ .input-icon {
+    color: var(--primary-color);
+}
+
+.unit-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: flex;
+    background: #e2e8f0;
+    border-radius: 7px;
+    padding: 3px;
+}
+
+textarea.styled-input {
+    padding-top: 1.5rem;
+}
+
+textarea.styled-input:focus + .input-label,
+textarea.styled-input:not(:placeholder-shown) + .input-label {
+    background-color: white;
+}
+/* BMI display styling */
+.bmi-display {
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 0.9rem;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    transition: color 0.4s ease;
+}
+/* signup.css: Styles for signup.html extracted from inline <style> */
+:root {
+    --primary-color:  #16c498;
+    --secondary-color:  #16c498;
+    --accent-color:  #16c498;
+    --text-color: #1e293b;
+}
+body {
+    font-family: 'Inter', sans-serif;
+    background-image: url("../images/bg.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    margin: 0;
+}
+.form-container {
+    max-width: 900px;
+    width: 100%;
+    margin: 2rem auto;
+    animation: fadeInUp 0.7s ease;
+}
+.glass-form {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.form-title {
+    font-size: 2.2rem; font-weight: 700; color: var(--text-color);
+    margin-bottom: 0.5rem; text-align: center;
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text; 
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.form-subtitle { color: #64748b; text-align: center; margin-bottom: 2.5rem; font-size: 1rem; }
+.two-column-form { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.form-section { margin-bottom: 1.5rem; }
+.form-section-title {
+    font-size: 1.1rem; font-weight: 600; color: var(--text-color);
+    margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0;
+}
+.input-group { position: relative; margin-bottom: 1.5rem; }
+.input-icon {
+    position: absolute; left: 1rem; top: 50%;
+    transform: translateY(-50%); color: #94a3b8; z-index: 1;
+}
+.styled-input, select.styled-input {
+    width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem;
+    border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem;
+    transition: all 0.3s ease; background: #f8fafc; appearance: none;
+}
+.styled-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    background: white; outline: none;
+}
+.input-label { display: block; font-weight: 500; color: #64748b; margin-bottom: 0.5rem; }
+.unit-toggle { position: absolute; right: 8px; top: 35px; z-index: 2; display: flex; background: #f1f5f9; border-radius: 7px; padding: 3px; }
+.unit-btn {
+    padding: 0.3rem 0.6rem; border: none; border-radius: 5px; background: transparent;
+    cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem; color: #64748b;
+}
+.unit-btn.active { background: white; color: var(--primary-color); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+#height-ft-group .height-input-group { display: flex; gap: 0.5rem; position: relative; }
+#height-ft-group .height-input-group input:first-child { padding-left: 1rem; }
+.bmi-display {
+    background: #f1f5f9; border-radius: 10px; padding: 0.9rem; text-align: center;
+    font-size: 1.2rem; font-weight: 700; color: var(--text-color); transition: color 0.4s ease;
+}
+.submit-btn {
+    width: 100%; padding: 1rem; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 1.1rem;
+    cursor: pointer; transition: all 0.3s ease; margin-top: 1.5rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3); }
+.login-link { text-align: center; margin-top: 1.5rem; color: #64748b; }
+.login-link a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
+.login-link a:hover { text-decoration: underline; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 768px) {
+    .two-column-form { grid-template-columns: 1fr; }
+    .glass-form { padding: 2rem; }
+}

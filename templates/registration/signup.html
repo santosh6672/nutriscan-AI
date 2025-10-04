@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account - NutriScan AI{% endblock %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+{% endblock %}
+
+{% block content %}
+<main class="form-container" role="main">
+    <div class="signup-form">
+        <h1 class="form-title">Create Your Account</h1>
+        <p class="form-subtitle">Join us to start your health journey</p>
+        
+        <form method="post" class="registration-form" novalidate autocomplete="off">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="form-errors" role="alert" aria-live="polite">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-grid">
+                <!-- Personal Information Section -->
+                <section class="form-section" aria-labelledby="personal-info-title">
+                    <h2 id="personal-info-title" class="section-title">Personal Information</h2>
+                    
+                    <div class="input-group">
+                        <label for="{{ form.name.id_for_label }}" class="input-label">Full Name</label>
+                        <i class="fas fa-user input-icon" aria-hidden="true"></i>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="field-error" role="alert">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="{{ form.email.id_for_label }}" class="input-label">Email Address</label>
+                        <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="field-error" role="alert">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="{{ form.password1.id_for_label }}" class="input-label">Password</label>
+                        <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                        {{ form.password1 }}
+                        <i class="fas fa-eye toggle-password" aria-hidden="true" title="Toggle password visibility"></i>
+                        {% if form.password1.errors %}
+                            <div class="field-error" role="alert">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="{{ form.password2.id_for_label }}" class="input-label">Confirm Password</label>
+                        <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                        {{ form.password2 }}
+                        <i class="fas fa-eye toggle-password" aria-hidden="true" title="Toggle password visibility"></i>
+                        {% if form.password2.errors %}
+                            <div class="field-error" role="alert">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <!-- Health Information Section -->
+                <section class="form-section" aria-labelledby="health-info-title">
+                    <h2 id="health-info-title" class="section-title">Health & Goals</h2>
+                    
+                    <div class="input-group">
+                        <label for="{{ form.age.id_for_label }}" class="input-label">Age</label>
+                        <i class="fas fa-calendar-alt input-icon" aria-hidden="true"></i>
+                        {{ form.age }}
+                        {% if form.age.errors %}
+                            <div class="field-error" role="alert">{{ form.age.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        <label for="weight-display-input" class="input-label">Weight</label>
+                        <div class="unit-toggle" role="group" aria-label="Weight unit selection">
+                            <button type="button" class="unit-btn active" data-unit="kg" data-target="weight" aria-pressed="true">kg</button>
+                            <button type="button" class="unit-btn" data-unit="lb" data-target="weight" aria-pressed="false">lb</button>
+                        </div>
+                        <i class="fas fa-weight input-icon" aria-hidden="true"></i>
+                        {{ form.weight_kg }}
+                        <input type="number" 
+                               step="0.1" 
+                               class="styled-input" 
+                               id="weight-display-input" 
+                               placeholder="e.g., 70"
+                               aria-label="Weight"
+                               min="20"
+                               max="300">
+                        {% if form.weight_kg.errors %}
+                            <div class="field-error" role="alert">{{ form.weight_kg.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        <label for="height-display-input" class="input-label">Height</label>
+                        <div class="unit-toggle" role="group" aria-label="Height unit selection">
+                            <button type="button" class="unit-btn active" data-unit="cm" data-target="height" aria-pressed="true">cm</button>
+                            <button type="button" class="unit-btn" data-unit="ft" data-target="height" aria-pressed="false">ft/in</button>
+                        </div>
+                        <i class="fas fa-ruler-vertical input-icon" aria-hidden="true"></i>
+                        {{ form.height_cm }}
+                        <div id="height-cm-display-group">
+                            <input type="number" 
+                                   step="0.1" 
+                                   class="styled-input" 
+                                   id="height-cm-display-input" 
+                                   placeholder="e.g., 175"
+                                   aria-label="Height in centimeters"
+                                   min="100"
+                                   max="250">
+                        </div>
+                        <div id="height-ft-display-group" style="display: none;" role="group" aria-label="Height in feet and inches">
+                            <input type="number" 
+                                   id="height-ft-display-input" 
+                                   class="styled-input" 
+                                   placeholder="ft"
+                                   aria-label="Feet"
+                                   min="3"
+                                   max="8">
+                            <input type="number" 
+                                   id="height-in-display-input" 
+                                   class="styled-input" 
+                                   placeholder="in"
+                                   aria-label="Inches"
+                                   min="0"
+                                   max="11">
+                        </div>
+                        {% if form.height_cm.errors %}
+                            <div class="field-error" role="alert">{{ form.height_cm.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Your Calculated BMI</label>
+                        <div class="bmi-display" aria-live="polite">
+                            <span id="bmi-output" aria-label="BMI value">--</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="signup-btn">
+                    Create Account <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+                <p class="login-link">
+                    Already have an account? <a href="{% url 'login' %}">Sign in</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script src="{% static 'js/signup.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+
+{% block content %}
+<div class="form-container">
+    <div class="glass-form">
+        <h2 class="form-title">Create Your Account</h2>
+        <p class="form-subtitle">Join us to start your health journey</p>
+        
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="two-column-form">
+                <div class="form-column">
+                    <div class="form-section">
+                        <div class="form-section-title">Personal Information</div>
+                        
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-user"></i></div>
+                            {{ form.name }}<label class="input-label">Full Name</label>{{ form.name.errors }}
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-envelope"></i></div>
+                            {{ form.email }}<label class="input-label">Email Address</label>{{ form.email.errors }}
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-lock"></i></div>
+                            {{ form.password1 }}<label class="input-label">Password</label>{{ form.password1.errors }}
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-lock"></i></div>
+                            {{ form.password2 }}<label class="input-label">Confirm Password</label>{{ form.password2.errors }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-column">
+                    <div class="form-section">
+                        <div class="form-section-title">Health & Goals</div>
+                        
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-calendar-alt"></i></div>
+                            {{ form.age }}<label class="input-label">Age</label>{{ form.age.errors }}
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Weight</label>
+                            <div class="unit-toggle">
+                                <button type="button" class="unit-btn active" data-unit="kg" data-target="weight">kg</button>
+                                <button type="button" class="unit-btn" data-unit="lb" data-target="weight">lb</button>
+                            </div>
+                            <div class="input-icon"><i class="fas fa-weight"></i></div>
+                            {{ form.weight_kg }}
+                            <input type="number" step="0.1" class="styled-input" id="weight-display-input" placeholder="e.g., 70">
+                            {{ form.weight_kg.errors }}
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Height</label>
+                            <div class="unit-toggle">
+                                <button type="button" class="unit-btn active" data-unit="cm" data-target="height">cm</button>
+                                <button type="button" class="unit-btn" data-unit="ft" data-target="height">ft/in</button>
+                            </div>
+                            <div class="input-icon"><i class="fas fa-ruler-vertical"></i></div>
+                            {{ form.height_cm }}
+                            <div id="height-cm-display-group">
+                                <input type="number" step="0.1" class="styled-input" id="height-cm-display-input" placeholder="e.g., 175">
+                            </div>
+                            <div id="height-ft-display-group" style="display: none;">
+                                <input type="number" id="height-ft-display-input" class="styled-input" placeholder="ft">
+                                <input type="number" id="height-in-display-input" class="styled-input" placeholder="in">
+                            </div>
+
+                            {{ form.height_cm.errors }}
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Your Calculated BMI</label>
+                            <div class="bmi-display">
+                                <span id="bmi-output">--</span>
+                            </div>
+                        </div>
+<style>
+#id_weight_kg, #id_height_cm { display: none; }
+</style>
+
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-heartbeat"></i></div>
+                            {{ form.health_issues }}<label class="input-label">Health Conditions</label>{{ form.health_issues.errors }}
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-utensils"></i></div>
+                            {{ form.dietary_preferences }}<label class="input-label">Dietary Preferences</label>{{ form.dietary_preferences.errors }}
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-bullseye"></i></div>
+                            {{ form.goals }}<label class="input-label">Your Goal</label>{{ form.goals.errors }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                <span>Create Account</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+            
+            <p class="login-link">Already have an account? <a href="{% url 'login' %}">Sign in here</a></p>
+        </form>
+    </div>
+</div>
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/signup.css' %}" />
+<script src="{% static 'js/signup.js' %}"></script>
+{% endblock %}

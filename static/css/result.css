@@ -1,0 +1,401 @@
+/* static/css/result.css */
+
+:root {
+    --primary-color: #007bff;
+    --success-color-dark: #2a9d8f;
+    --danger-color: #e76f51;
+    --warning-color: #FBC02D;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #343a40;
+    --text-muted: #6c757d;
+    --border-color: #dee2e6;
+    --font-family: 'Roboto', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px 0;
+}
+
+h1, h2, h3, h4 {
+    margin-top: 0;
+    font-weight: 500;
+}
+
+h1 { 
+    font-size: 2.5rem; 
+    color: var(--primary-color); 
+    margin-bottom: 10px;
+}
+
+h2 { 
+    font-size: 1.5rem; 
+    margin-bottom: 15px;
+}
+
+h3 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+h4 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+/* Main Grid Layout */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 30px;
+}
+
+.card {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column; /* Default for single-section cards */
+}
+
+/* --- Combo Card Specific Styles --- */
+
+/* Card 1: Product & Score */
+.product-score-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.product-score-card > div { 
+    flex: 1; 
+}
+
+.product-info { 
+    text-align: center; 
+}
+
+.product-image { 
+    max-width: 150px; 
+    max-height: 150px;
+    margin: 15px auto 0;
+    border-radius: 8px;
+    display: block;
+}
+
+.brand { 
+    color: var(--text-muted); 
+    font-style: italic; 
+    margin-bottom: 10px;
+}
+
+.score-info { 
+    text-align: center; 
+}
+
+.suitability-reason {
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+/* Card 2: Nutrition & Pros/Cons */
+.nutrition-pros-cons-card {
+    flex-direction: row;
+    gap: 30px;
+}
+
+.nutrition-section, .pros-cons-section { 
+    flex: 1; 
+    min-width: 0; 
+}
+
+.pros-cons-section { 
+    border-left: 1px solid var(--border-color); 
+    padding-left: 30px; 
+}
+
+.pros, .cons { 
+    margin-bottom: 25px; 
+    position: relative;
+}
+
+/* Card 3: Summary & Image */
+.summary-image-card {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 25px;
+}
+
+.summary-section { 
+    flex: 2; 
+}
+
+.image-section { 
+    flex: 1; 
+    text-align: center; 
+}
+
+.image-section img { 
+    max-width: 100%; 
+    border-radius: 8px; 
+    border: 1px solid var(--border-color); 
+}
+
+/* --- Reusable Component Styles --- */
+
+/* Nutri-Score Badge */
+.nutriscore-badge {
+    width: 120px; 
+    height: 70px; 
+    border-radius: 8px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    margin: 10px auto; 
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.nutriscore-badge span {
+    font-size: 3rem; 
+    font-weight: 700; 
+    color: white; 
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.nutriscore-a { background-color: #038141; }
+.nutriscore-b { background-color: #85BB2F; }
+.nutriscore-c { background-color: #FECB02; }
+.nutriscore-d { background-color: #F58220; }
+.nutriscore-e { background-color: #EF3E22; }
+
+/* Nutrition Table */
+.nutrition-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    table-layout: fixed;
+}
+
+.nutrition-table td { 
+    padding: 10px 5px; 
+    border-bottom: 1px solid var(--border-color); 
+    word-wrap: break-word;
+}
+
+.nutrition-table tr:last-child td { 
+    border-bottom: none; 
+}
+
+.value { 
+    text-align: right; 
+    font-weight: 500; 
+}
+
+.serving-info {
+    font-style: italic;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+/* Pros, Cons, Alternatives Lists */
+.pros h4, .cons h4, .alternatives-card h4 { 
+    margin-bottom: 15px; 
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pros h4 { 
+    color: var(--success-color-dark); 
+}
+
+.cons h4 { 
+    color: var(--danger-color); 
+}
+
+.alternatives-card h4 {
+    color: var(--warning-color);
+}
+
+.pros ul, .cons ul, .alternatives-card ul { 
+    list-style: none; 
+    padding-left: 0; 
+    margin: 0; 
+}
+
+.pros li, .cons li, .alternatives-card li { 
+    padding-left: 25px; 
+    position: relative; 
+    margin-bottom: 10px; 
+    line-height: 1.5;
+}
+
+.pros li::before, .cons li::before, .alternatives-card li::before {
+    font-family: "Font Awesome 6 Free"; 
+    font-weight: 900;
+    position: absolute; 
+    left: 0; 
+    top: 2px;
+}
+
+.pros li::before { 
+    content: "\f058"; 
+    color: var(--success-color-dark); 
+}
+
+.cons li::before { 
+    content: "\f057"; 
+    color: var(--danger-color); 
+}
+
+.alternatives-card li::before { 
+    content: "\f0eb"; 
+    color: var(--warning-color); 
+}
+
+/* Toggle button styles */
+.toggle-list-button {
+    display: inline-block;
+    margin-top: 15px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 5px 0;
+    transition: color 0.2s;
+}
+
+.toggle-list-button:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Hidden items */
+.hidden-item {
+    display: none !important;
+}
+
+/* Footer */
+.page-footer { 
+    text-align: center; 
+    margin-top: 40px; 
+    padding: 20px 0;
+}
+
+.btn-scan-again {
+    display: inline-block; 
+    background-color: var(--primary-color); 
+    color: white;
+    padding: 12px 25px; 
+    border-radius: 8px; 
+    text-decoration: none;
+    font-weight: 500; 
+    transition: background-color 0.3s, transform 0.2s;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-scan-again:hover { 
+    background-color: #0056b3; 
+    transform: translateY(-2px); 
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 992px) {
+    .main-content {
+        grid-template-columns: 1fr; /* Switch to a single column */
+    }
+    
+    .product-score-card, .nutrition-pros-cons-card, .summary-image-card {
+        flex-direction: column; /* Stack items vertically inside combo cards */
+    }
+    
+    .pros-cons-section { 
+        border-left: none; 
+        padding-left: 0; 
+        border-top: 1px solid var(--border-color); 
+        padding-top: 20px; 
+        margin-top: 20px; 
+    }
+    
+    .nutrition-section, .pros-cons-section {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 0 10px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+    
+    .product-image {
+        max-width: 120px;
+        max-height: 120px;
+    }
+    
+    .nutriscore-badge {
+        width: 100px;
+        height: 60px;
+    }
+    
+    .nutriscore-badge span {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .card {
+        padding: 15px;
+    }
+    
+    .nutrition-table td {
+        padding: 8px 3px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-scan-again {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,122 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScan AI - Analysis Result</title>
+    <link rel="stylesheet" href="{% static 'css/result.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <div class="container">
+        <header class="page-header">
+            <h1>Analysis Result</h1>
+            <p>Here's the detailed breakdown of <strong>{{ product.product_name }}</strong> based on your profile, {{ user.first_name }}.</p>
+        </header>
+
+        <main class="main-content">
+
+            <div class="card combo-card product-score-card">
+                <div class="product-info">
+                    <h2>{{ product.product_name }}</h2>
+                    <p class="brand">{{ product.brands }}</p>
+                    {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.product_name }}" class="product-image">
+                    {% else %}
+                    <div class="product-image-placeholder">
+                        <i class="fas fa-image"></i>
+                        <p>No image available</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="score-info">
+                    <h3>Nutri-Score Grade</h3>
+                    <div class="nutriscore-badge nutriscore-{{ product.nutriscore_grade|lower }}">
+                        <span>{{ product.nutriscore_grade }}</span>
+                    </div>
+                    <p class="suitability-reason">Nutri-Score Value: <strong>{{ product.nutriscore_score }}</strong></p>
+                </div>
+            </div>
+
+            <div class="card combo-card nutrition-pros-cons-card">
+                <div class="nutrition-section">
+                    <h3>Nutrition Facts</h3>
+                    <p class="serving-info">Values per 100g / 100ml</p>
+                    <table class="nutrition-table">
+                        <tbody>
+                            {% for key, name in nutrient_map.items %}
+                                {% with nutrient_key_100g=key|add:"_100g" nutrient_unit=key|add:"_unit" %}
+                                    {% if product.nutriments|get_item:nutrient_key_100g is not None %}
+                                        <tr>
+                                            <td>{{ name }}</td>
+                                            <td class="value">
+                                                {{ product.nutriments|get_item:nutrient_key_100g|floatformat:2 }} 
+                                                {{ product.nutriments|get_item:nutrient_unit }}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pros-cons-section">
+                    <div class="pros">
+                        <h4><i class="fas fa-check-circle"></i> Pros</h4>
+                        <ul>
+                            {% for pro in analysis.pros %}
+                                <li>{{ pro }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4><i class="fas fa-times-circle"></i> Cons</h4>
+                        <ul>
+                            {% for con in analysis.cons %}
+                                <li>{{ con }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card combo-card summary-image-card">
+                <div class="summary-section">
+                    <h4>AI Summary</h4>
+                    <p>{{ analysis.summary }}</p>
+                </div>
+                {% if scan_image %}
+                <div class="image-section">
+                    <h4>Scanned Barcode</h4>
+                    <img src="data:image/jpeg;base64,{{ scan_image }}" alt="Scanned Barcode">
+                </div>
+                {% endif %}
+            </div>
+
+            {% if analysis.alternatives %}
+            <div class="card alternatives-card">
+                <h4><i class="fas fa-lightbulb"></i> Healthier Alternatives</h4>
+                <ul>
+                    {% for alt in analysis.alternatives %}
+                        <li>{{ alt }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+        </main>
+        
+        <footer class="page-footer">
+            <a href="{% url 'scan_product' %}" class="btn-scan-again">Scan Another Product</a>
+        </footer>
+    </div>
+
+    <script src="{% static 'js/result.js' %}"></script>
+</body>
+</html>

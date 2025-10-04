@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - NutriScan AI{% endblock %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+{% endblock %}
+
+{% block content %}
+<main class="profile-container" role="main">
+    <div class="profile-header">
+        <div class="profile-cover"></div>
+        <div class="profile-info">
+            <div class="profile-avatar">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile photo" class="avatar-img">
+                {% else %}
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <h1 class="profile-name">{{ user.name }}</h1>
+            <p class="profile-email">{{ user.email }}</p>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <nav class="profile-nav" role="navigation">
+            <button class="nav-tab active" data-tab="personal-info">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                Personal Info
+            </button>
+            <button class="nav-tab" data-tab="health-metrics">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                Health Metrics
+            </button>
+            <button class="nav-tab" data-tab="preferences">
+                <i class="fas fa-cog" aria-hidden="true"></i>
+                Preferences
+            </button>
+        </nav>
+
+        <div class="profile-sections">
+            <!-- Personal Information Section -->
+            <section id="personal-info" class="profile-section active" role="tabpanel">
+                <h2 class="section-title">Personal Information</h2>
+                <form class="profile-form" method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="id_name">Full Name</label>
+                            <input type="text" id="id_name" name="name" value="{{ user.name }}" class="form-input">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="id_email">Email Address</label>
+                            <input type="email" id="id_email" name="email" value="{{ user.email }}" class="form-input" readonly>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="id_phone">Phone Number</label>
+                            <input type="tel" id="id_phone" name="phone" value="{{ user.phone }}" class="form-input">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="id_date_of_birth">Date of Birth</label>
+                            <input type="date" id="id_date_of_birth" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d' }}" class="form-input">
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Health Metrics Section -->
+            <section id="health-metrics" class="profile-section" role="tabpanel" hidden>
+                <h2 class="section-title">Health Metrics</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i class="fas fa-weight" aria-hidden="true"></i>
+                            <h3>Weight</h3>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-value">{{ user.weight_kg }} kg</span>
+                            <button class="update-btn" data-metric="weight">
+                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                Update
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i class="fas fa-ruler-vertical" aria-hidden="true"></i>
+                            <h3>Height</h3>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-value">{{ user.height_cm }} cm</span>
+                            <button class="update-btn" data-metric="height">
+                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                Update
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <i class="fas fa-calculator" aria-hidden="true"></i>
+                            <h3>BMI</h3>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-value" id="bmi-display">--</span>
+                            <span class="metric-status" id="bmi-status"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-history">
+                    <h3>History</h3>
+                    <canvas id="metricsChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Preferences Section -->
+            <section id="preferences" class="profile-section" role="tabpanel" hidden>
+                <h2 class="section-title">Preferences</h2>
+                <form class="preferences-form">
+                    <div class="preference-group">
+                        <h3>Units</h3>
+                        <div class="preference-options">
+                            <label class="radio-option">
+                                <input type="radio" name="weight_unit" value="kg" checked>
+                                <span>Kilograms (kg)</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="weight_unit" value="lb">
+                                <span>Pounds (lb)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="preference-group">
+                        <h3>Notifications</h3>
+                        <div class="preference-options">
+                            <label class="switch-option">
+                                <input type="checkbox" name="email_notifications" checked>
+                                <span class="switch"></span>
+                                <span>Email Notifications</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</main>
+
+<!-- Update Metric Modal -->
+<div class="modal" id="updateMetricModal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-content" role="document">
+        <div class="modal-header">
+            <h3 id="modalTitle">Update Metric</h3>
+            <button class="close-modal" aria-label="Close modal">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="updateMetricForm" class="metric-form">
+                <div class="input-group">
+                    <label for="metric-value">Value</label>
+                    <input type="number" id="metric-value" step="0.1" class="form-input">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" id="saveMetric">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
+<script src="{% static 'js/profile.js' %}" defer></script>
+{% endblock %}

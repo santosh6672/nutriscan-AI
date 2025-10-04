@@ -1,0 +1,47 @@
+/* Profile page styles extracted from profile.html */
+.avatar-large {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.avatar-initials-large {
+    font-size: 3rem;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-list {
+    padding: 0;
+    list-style: none;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item i {
+    width: 20px;
+    margin-right: 10px;
+    color: #555;
+}
+
+.info-item span {
+    font-weight: 500;
+    color: #333;
+}
