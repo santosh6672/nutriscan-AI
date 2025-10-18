@@ -130,8 +130,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-## 📧 Contact
 
-Your Name - [@your_twitter_handle](https://twitter.com/your_twitter_handle) - your.email@example.com
-
-Project Link: [https://github.com/your-username/nutriscan_ai](https://github.com/your-username/nutriscan_ai)
