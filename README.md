@@ -38,20 +38,20 @@ NutriScan AI is a smart web application designed to be your personal dietary adv
 <div align="center">
   <table>
     <tr>
-      <td><img src="static/images/screenshot -home.png" alt="Home Page" width="300"></td>
-      <td><img src="static/images/screenshot -scan.png" alt="Scan Page" width="300"></td>
+      <td><img src="static/images/Screenshot-home.png" alt="Home Page" width="300"></td>
+      <td><img src="static/images/Screenshot-scan.png" alt="Scan Page" width="300"></td>
     </tr>
     <tr>
       <td align="center"><em>Home Page</em></td>
       <td align="center"><em>Barcode Scanning</em></td>
     </tr>
     <tr>
-      <td><img src="static/images/screenshot(.png" alt="Results Page" width="300"></td>
-      <td><img src="static/images/screenshot-profile.png" alt="Profile Page" width="300"></td>
+      <td><img src="static/images/Screenshot.png" alt="Barcode detection" width="300"></td>
+      <td><img src="static/images/Screenshot-.png" alt="Analysis" width="300"></td>
     </tr>
     <tr>
-      <td align="center"><em>Analysis Results</em></td>
-      <td align="center"><em>Health Profile</em></td>
+      <td align="center"><em>Barcode detection</em></td>
+      <td align="center"><em>analysis Results</em></td>
     </tr>
   </table>
 </div>
