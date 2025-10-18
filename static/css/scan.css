@@ -8,9 +8,9 @@
     --transition-speed: 0.3s;
 }
 
-/* --- Upload Area Styling (replaces .interactive-upload) --- */
+/* --- Upload Area Styling --- */
 .upload-area {
-    padding: 3rem 1.5rem;
+    padding: 2.5rem 1.5rem;
     border: 2px dashed var(--primary-color-hover);
     border-radius: var(--border-radius-lg);
     background-color: #f8f9fa;
@@ -45,13 +45,32 @@
 }
 
 .upload-area__preview img {
-    max-height: 150px; /* Reduced from 250px to better fit the card */
+    max-height: 150px;
     max-width: 100%;
     object-fit: contain;
     border-radius: var(--border-radius-md);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* --- Manual Barcode Section --- */
+.manual-barcode-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6 !important;
+}
+
+.manual-barcode-section h6 {
+    color: #495057;
+    font-weight: 600;
+}
+
+.separator {
+    border-top: 1px solid #dee2e6;
+}
+
+.separator span {
+    position: relative;
+    top: -10px;
+}
 
 /* --- Scan Result View Styling --- */
 #scan-result-view h4 {
@@ -60,10 +79,18 @@
 
 #barcodeData {
     background: #f0fdf9;
-    padding: 10px 15px;
+    padding: 15px;
     border-radius: var(--border-radius-md);
     border-left: 4px solid var(--primary-color);
     margin-top: 1rem;
+}
+
+#barcodeValue {
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid #00b894;
+    display: inline-block;
 }
 
 /* --- Buttons & Utility --- */
@@ -84,13 +111,46 @@
     box-shadow: 0 6px 15px rgba(0, 184, 148, 0.4);
 }
 
-#scanBtn, #analyzeBtn, #scanAnotherBtn {
-    min-width: 160px; /* Standardized button width */
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
 }
 
-/* --- UI State Transitions for a smoother experience --- */
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+#scanBtn, #analyzeBtn, #scanAnotherBtn {
+    min-width: 160px;
+}
+
+/* --- UI State Transitions --- */
 #scan-input-view,
 #loading-view,
 #scan-result-view {
     transition: opacity var(--transition-speed) ease-in-out;
+}
+
+/* --- Camera Styles --- */
+#cameraStream {
+    background: #000;
+    border-radius: var(--border-radius-md);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .upload-area {
+        padding: 1.5rem 1rem;
+    }
+    
+    .manual-barcode-section .input-group {
+        flex-direction: column;
+    }
+    
+    .manual-barcode-section .input-group .btn {
+        margin-top: 10px;
+        width: 100%;
+    }
 }

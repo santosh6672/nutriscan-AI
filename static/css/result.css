@@ -1,16 +1,22 @@
-/* static/css/result.css */
-
 :root {
-    --primary-color: #007bff;
+    --primary-color: #16c498;
+    --success-color: #28a745;
     --success-color-dark: #2a9d8f;
     --danger-color: #e76f51;
     --warning-color: #FBC02D;
+    --unknown-color: #6c757d;
     --background-color: #f8f9fa;
     --card-background: #ffffff;
     --text-color: #343a40;
     --text-muted: #6c757d;
     --border-color: #dee2e6;
     --font-family: 'Roboto', sans-serif;
+    
+    /* Advisability colors */
+    --advisability-yes: #28a745;
+    --advisability-no: #dc3545;
+    --advisability-with-caution: #ffc107;
+    --advisability-unknown: #6c757d;
 }
 
 * {
@@ -36,9 +42,10 @@ body {
     text-align: center;
     margin-bottom: 40px;
     padding: 20px 0;
+    position: relative;
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5 {
     margin-top: 0;
     font-weight: 500;
 }
@@ -64,10 +71,113 @@ h4 {
     margin-bottom: 15px;
 }
 
+h5 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+}
+
+/* Barcode Badge */
+.barcode-badge {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.barcode-badge i {
+    margin-right: 5px;
+}
+
+/* Error State */
+.error-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.error-card {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.error-card i {
+    font-size: 3rem;
+    color: var(--danger-color);
+    margin-bottom: 20px;
+}
+
+.btn-retry {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.btn-retry:hover {
+    background: #0056b3;
+    color: white;
+}
+
+/* Advisability Banner */
+.advisability-banner {
+    margin-bottom: 30px;
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+}
+
+.advisability-yes {
+    background: linear-gradient(135deg, var(--success-color), var(--success-color-dark));
+}
+
+.advisability-no {
+    background: linear-gradient(135deg, var(--danger-color), #c82333);
+}
+
+.advisability-withcaution {
+    background: linear-gradient(135deg, var(--warning-color), #e0a800);
+}
+
+.advisability-unknown {
+    background: linear-gradient(135deg, var(--unknown-color), #5a6268);
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.banner-icon {
+    font-size: 3rem;
+}
+
+.banner-text h2 {
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+.banner-text p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
 /* Main Grid Layout */
 .main-content {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    grid-template-columns: 1fr 1fr;
     gap: 30px;
 }
 
@@ -78,7 +188,7 @@ h4 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border-color);
     display: flex;
-    flex-direction: column; /* Default for single-section cards */
+    flex-direction: column;
 }
 
 /* --- Combo Card Specific Styles --- */
@@ -103,6 +213,18 @@ h4 {
     max-height: 150px;
     margin: 15px auto 0;
     border-radius: 8px;
+    display: block;
+}
+
+.product-image-placeholder {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 20px;
+}
+
+.product-image-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 10px;
     display: block;
 }
 
@@ -158,10 +280,87 @@ h4 {
     text-align: center; 
 }
 
-.image-section img { 
+.scanned-barcode { 
     max-width: 100%; 
     border-radius: 8px; 
     border: 1px solid var(--border-color); 
+}
+
+.barcode-display {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.barcode-number {
+    font-family: monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.image-caption {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+/* Profile Context Card */
+.profile-context-card {
+    grid-column: 1 / -1;
+}
+
+.profile-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.profile-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-item:last-child {
+    border-bottom: none;
+}
+
+.profile-item .label {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.profile-item .value {
+    font-weight: 400;
+}
+
+/* Product Categories */
+.product-categories {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* No Data States */
+.no-data {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.no-nutrition-data {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 30px 20px;
+}
+
+.no-nutrition-data i {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    display: block;
 }
 
 /* --- Reusable Component Styles --- */
@@ -190,6 +389,7 @@ h4 {
 .nutriscore-c { background-color: #FECB02; }
 .nutriscore-d { background-color: #F58220; }
 .nutriscore-e { background-color: #EF3E22; }
+.nutriscore-unknown { background-color: var(--unknown-color); }
 
 /* Nutrition Table */
 .nutrition-table { 
@@ -220,8 +420,8 @@ h4 {
     font-size: 0.9rem;
 }
 
-/* Pros, Cons, Alternatives Lists */
-.pros h4, .cons h4, .alternatives-card h4 { 
+/* Pros, Cons Lists */
+.pros h4, .cons h4 { 
     margin-bottom: 15px; 
     display: flex;
     align-items: center;
@@ -236,24 +436,20 @@ h4 {
     color: var(--danger-color); 
 }
 
-.alternatives-card h4 {
-    color: var(--warning-color);
-}
-
-.pros ul, .cons ul, .alternatives-card ul { 
+.pros ul, .cons ul { 
     list-style: none; 
     padding-left: 0; 
     margin: 0; 
 }
 
-.pros li, .cons li, .alternatives-card li { 
+.pros li, .cons li { 
     padding-left: 25px; 
     position: relative; 
     margin-bottom: 10px; 
     line-height: 1.5;
 }
 
-.pros li::before, .cons li::before, .alternatives-card li::before {
+.pros li::before, .cons li::before {
     font-family: "Font Awesome 6 Free"; 
     font-weight: 900;
     position: absolute; 
@@ -271,11 +467,6 @@ h4 {
     color: var(--danger-color); 
 }
 
-.alternatives-card li::before { 
-    content: "\f0eb"; 
-    color: var(--warning-color); 
-}
-
 /* Toggle button styles */
 .toggle-list-button {
     display: inline-block;
@@ -290,7 +481,7 @@ h4 {
 }
 
 .toggle-list-button:hover {
-    color: #0056b3;
+    color: #16c498;
     text-decoration: underline;
 }
 
@@ -304,9 +495,18 @@ h4 {
     text-align: center; 
     margin-top: 40px; 
     padding: 20px 0;
+    border-top: 1px solid var(--border-color);
 }
 
-.btn-scan-again {
+.footer-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.btn-scan-again, .btn-print {
     display: inline-block; 
     background-color: var(--primary-color); 
     color: white;
@@ -320,19 +520,36 @@ h4 {
     font-size: 1rem;
 }
 
+.btn-print {
+    background-color: var(--text-muted);
+}
+
 .btn-scan-again:hover { 
-    background-color: #0056b3; 
+    background-color: #16c498; 
     transform: translateY(-2px); 
+}
+
+.btn-print:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+.disclaimer {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.4;
 }
 
 /* --- Responsive Design --- */
 @media (max-width: 992px) {
     .main-content {
-        grid-template-columns: 1fr; /* Switch to a single column */
+        grid-template-columns: 1fr;
     }
     
     .product-score-card, .nutrition-pros-cons-card, .summary-image-card {
-        flex-direction: column; /* Stack items vertically inside combo cards */
+        flex-direction: column;
     }
     
     .pros-cons-section { 
@@ -343,8 +560,19 @@ h4 {
         margin-top: 20px; 
     }
     
-    .nutrition-section, .pros-cons-section {
-        width: 100%;
+    .banner-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .footer-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-scan-again, .btn-print {
+        width: 200px;
     }
 }
 
@@ -378,6 +606,10 @@ h4 {
     .nutriscore-badge span {
         font-size: 2.5rem;
     }
+    
+    .profile-details {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
@@ -394,8 +626,25 @@ h4 {
         font-size: 0.9rem;
     }
     
-    .btn-scan-again {
+    .btn-scan-again, .btn-print {
         padding: 10px 20px;
         font-size: 0.9rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .btn-scan-again, .btn-print, .toggle-list-button {
+        display: none;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #000;
     }
 }

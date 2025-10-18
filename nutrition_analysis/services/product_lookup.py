@@ -20,7 +20,9 @@ def fetch_product_data(barcode: str) -> Optional[Dict]:
             "nutriscore_score": product.get("product", {}).get("nutriscore_score", 0),
             "nutriments": product.get("product", {}).get("nutriments", {}),
             "nutrient_levels": product.get("product", {}).get("nutrient_levels", {}),
-            "image_url": product.get("product", {}).get("image_url", "")
+            "image_url": product.get("product", {}).get("image_url", ""),
+            "brands": product.get("product", {}).get("brands", "Unknown Brand"),
+            "categories": product.get("product", {}).get("categories", ""),
         }
         
     except (requests.RequestException, ValueError, KeyError) as e:

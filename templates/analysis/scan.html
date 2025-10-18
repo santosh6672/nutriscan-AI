@@ -10,85 +10,132 @@
 
                     <h2 class="card-title mb-1">Product Scan</h2>
                     <p class="card-subtitle mb-4 text-muted">
-                        Upload an image or use your camera to scan a product barcode.
+                        Upload an image, use your camera, or enter a barcode to scan a product.
                     </p>
 
                     <form id="scanForm" method="post" action="{% url 'scan_product' %}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="file" name="image" accept="image/*" id="id_image" class="d-none" aria-describedby="fileHelp">
                         
+                        <!-- Hidden input for manual barcode -->
+                        <input type="hidden" name="manual_barcode_data" id="manualBarcodeInput" value="{{ current_barcode|default:'' }}">
+                        
                         <div id="scan-input-view">
-                            <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Upload barcode image">
-                                <div class="upload-area__content">
-                                    <i class="bi bi-upload fs-1 text-primary mb-2"></i>
-                                    <p class="mt-0 mb-1 fw-bold" id="uploadText">Drag & drop your barcode image here</p>
-                                    <p class="mb-0 text-muted">or <span class="text-primary fw-bold" style="cursor: pointer;">browse</span></p>
-                                    <small class="text-muted d-block mt-2">Accepted formats: JPG, PNG (max 5MB)</small>
-                                </div>
-                                <div class="upload-area__preview d-none" id="imagePreview">
-                                    <img id="previewImage" src="#" alt="Barcode Preview" class="img-fluid rounded shadow-sm">
-                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImageBtn" aria-label="Remove image">
-                                        <i class="bi bi-x-circle me-1"></i>Remove
+                            <!-- Manual Barcode Input Section -->
+                            <div class="manual-barcode-section mb-4 p-3 border rounded bg-light">
+                                <h6 class="mb-3"><i class="bi bi-upc me-2"></i>Enter Barcode Manually</h6>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="manualBarcodeText"
+                                           placeholder="e.g., 1234567890123" 
+                                           value="{{ current_barcode|default:'' }}"
+                                           maxlength="20">
+                                    <button type="button" class="btn btn-outline-primary" id="useManualBarcodeBtn">
+                                        Use This Barcode
                                     </button>
                                 </div>
+                                <small class="text-muted d-block mt-2">Enter 8-13 digit barcode numbers</small>
                             </div>
 
-                            <div class="mt-4">
-                                <button type="button" class="btn btn-outline-secondary mb-2" id="openCameraBtn">
-                                    <i class="bi bi-camera-video me-1"></i> Use Camera
-                                </button>
-                                <div id="cameraContainer" class="d-none">
-                                    <video id="cameraStream" autoplay playsinline class="border rounded mb-2 w-100" style="max-height: 250px;"></video>
-                                    <button type="button" class="btn btn-sm btn-success mb-3" id="captureBtn">
+                            <div class="separator mb-4 position-relative text-center">
+                                <span class="bg-white px-3 text-muted">OR</span>
+                            </div>
+
+                            <!-- Image Upload Section -->
+                            <div class="upload-section">
+                                <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Upload barcode image">
+                                    <div class="upload-area__content">
+                                        <i class="bi bi-upload fs-1 text-primary mb-2"></i>
+                                        <p class="mt-0 mb-1 fw-bold" id="uploadText">Drag & drop your barcode image here</p>
+                                        <p class="mb-0 text-muted">or <span class="text-primary fw-bold" style="cursor: pointer;">browse</span></p>
+                                        <small class="text-muted d-block mt-2">Accepted formats: JPG, PNG (max 5MB)</small>
+                                    </div>
+                                    <div class="upload-area__preview d-none" id="imagePreview">
+                                        <img id="previewImage" src="#" alt="Barcode Preview" class="img-fluid rounded shadow-sm">
+                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImageBtn" aria-label="Remove image">
+                                            <i class="bi bi-x-circle me-1"></i>Remove
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="openCameraBtn">
+                                        <i class="bi bi-camera-video me-1"></i> Use Camera
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="clearSessionBtn">
+                                        <i class="bi bi-arrow-clockwise me-1"></i> Clear Session
+                                    </button>
+                                </div>
+                                
+                                <div id="cameraContainer" class="d-none mt-3">
+                                    <video id="cameraStream" autoplay playsinline class="border rounded mb-2 w-100" style="max-height: 200px;"></video>
+                                    <button type="button" class="btn btn-sm btn-success me-2" id="captureBtn">
                                         <i class="bi bi-camera me-1"></i> Capture
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="cancelCameraBtn">
+                                        Cancel
                                     </button>
                                     <canvas id="captureCanvas" class="d-none"></canvas>
                                 </div>
                             </div>
                             
-                            <div class="mt-4">
+                            <!-- Action Buttons -->
+                            <div class="action-buttons mt-4">
                                 <button type="button" class="btn btn-gradient-primary btn-lg px-5" id="scanBtn" disabled>
-                                    <i class="bi bi-upc-scan me-2"></i> Scan Barcode
+                                    <i class="bi bi-upc-scan me-2"></i> Scan Barcode from Image
                                 </button>
                             </div>
                         </div>
 
+                        <!-- Loading View -->
                         <div id="loading-view" class="d-none">
                             <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                             <p class="mt-3 mb-0 fs-5"><strong>Scanning barcode...</strong></p>
+                            <p class="text-muted">This may take a few seconds</p>
                         </div>
 
+                        <!-- Scan Result View -->
                         <div id="scan-result-view" class="d-none">
                             <h4 class="mb-3">Scan Result</h4>
                             <div class="row align-items-center">
                                 <div class="col-md-6">
                                     <div class="border rounded p-2 mb-3 bg-light">
-                                        <img id="resultImage" src="" alt="Barcode Detection" class="img-fluid">
+                                        <img id="resultImage" src="" alt="Barcode Detection" class="img-fluid rounded">
                                     </div>
-                                    <small class="text-muted">Red boxes show detected barcode areas</small>
+                                    <small class="text-muted">Green boxes show detected barcode areas</small>
                                 </div>
                                 <div class="col-md-6">
                                     <div id="resultMessage" class="alert alert-info"></div>
                                     <div id="barcodeData" class="d-none">
                                         <h6>Detected Barcode:</h6>
-                                        <code id="barcodeValue" class="fs-4 text-success fw-bold"></code>
+                                        <code id="barcodeValue" class="fs-4 text-success fw-bold d-block mb-2"></code>
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-gradient-primary" id="analyzeBtn">
+                                                <i class="bi bi-graph-up me-1"></i> Analyze This Product
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="mt-4">
-                                <button type="button" class="btn btn-secondary me-2" id="scanAnotherBtn">
+                                <button type="button" class="btn btn-outline-secondary me-2" id="scanAnotherBtn">
                                     <i class="bi bi-arrow-clockwise me-1"></i> Scan Another
                                 </button>
-                                <button type="submit" class="btn btn-gradient-primary d-none" id="analyzeBtn">
-                                    <i class="bi bi-graph-up me-1"></i> Analyze Product
+                                <button type="button" class="btn btn-outline-primary" id="tryManualBtn">
+                                    <i class="bi bi-keyboard me-1"></i> Try Manual Entry
                                 </button>
                             </div>
                         </div>
                     </form>
 
+                    <!-- Error Messages -->
                     <div id="errorMessages" class="mt-3 text-danger fw-bold" role="alert"></div>
+
+                    <!-- Success Message -->
+                    <div id="successMessages" class="mt-3 text-success fw-bold d-none" role="alert"></div>
 
                 </div>
             </div>
@@ -100,6 +147,7 @@
 <link rel="stylesheet" href="{% static 'css/scan.css' %}" />
 <script>
     const scanUrl = "{% url 'scan_product' %}";
+    const clearSessionUrl = "{% url 'clear_scan_session' %}";
 </script>
 <script src="{% static 'js/scan.js' %}"></script>
 {% endblock %}

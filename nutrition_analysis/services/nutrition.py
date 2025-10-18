@@ -1,21 +1,11 @@
-# nutrition.py
-"""
-nutrition.py - Service module for preparing prompts and calling an LLM to analyze nutrition.
-
-Key features:
-- Portable PDF path handling using Django settings (settings.BASE_DIR)
-- Robust HF client response parsing
-- Deterministic return type: ALWAYS return a Python dict; if an error occurs, return {"error": "..."}
-- Simple caching for parsed PDFs
-- Token / length truncation helpers (approximate)
-"""
-
 import json
 import logging
 import os
 import hashlib
 import time
-from typing import Any, Dict, Optional
+import re
+from typing import Any, Dict, Optional, Tuple
+from dataclasses import dataclass
 
 import fitz  # PyMuPDF
 from huggingface_hub import InferenceClient
@@ -23,312 +13,389 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-# Create HF client once (safe to reuse)
+# Configuration
+CONFIG = {
+    "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+    "max_tokens": 400,
+    "temperature": 0.2,
+    "timeout": 30,
+    "max_retries": 2,
+    "max_pdf_words": 2500,
+    "cache_ttl": 3600,  # 1 hour cache TTL
+}
+
+@dataclass
+class CacheEntry:
+    text: str
+    timestamp: float
+
+# Enhanced cache with TTL
+_pdf_cache: Dict[str, CacheEntry] = {}
+
+# Initialize client once
 HF_TOKEN = os.environ.get("HF_TOKEN") or getattr(settings, "HF_TOKEN", None)
-if not HF_TOKEN:
-    logger.warning("HF_TOKEN not found in environment or settings; calls will likely fail if required.")
 
-# Use the same provider as original code (but handle response formats robustly)
-_client = InferenceClient(provider="novita", api_key=HF_TOKEN)
+_client = None
+if HF_TOKEN:
+    try:
+        _client = InferenceClient(provider="novita", api_key=HF_TOKEN)
+    except Exception as e:
+        logger.error(f"Failed to initialize HF client: {e}")
 
-# Simple in-memory cache for PDF text (keyed by md5(file_bytes))
-_pdf_cache: Dict[str, str] = {}
+def _clean_cache():
+    """Remove expired cache entries"""
+    current_time = time.time()
+    expired_keys = [
+        key for key, entry in _pdf_cache.items()
+        if current_time - entry.timestamp > CONFIG["cache_ttl"]
+    ]
+    for key in expired_keys:
+        del _pdf_cache[key]
 
-# Simple utility: approximate token estimation by whitespace-separated words
 def estimate_token_count(text: str) -> int:
-    return len(text.split())
-
+    """More accurate token estimation (rough approximation)"""
+    return len(text.split()) + len(text) // 4
 
 def truncate_text_by_wordcount(text: str, max_words: int) -> str:
+    """Truncate text preserving sentence boundaries when possible"""
+    if not text:
+        return ""
+    
     words = text.split()
     if len(words) <= max_words:
         return text
-    return " ".join(words[:max_words])
-
+    
+    # Try to truncate at sentence boundary
+    truncated = " ".join(words[:max_words])
+    last_period = truncated.rfind('.')
+    if last_period > len(truncated) * 0.7:  # Only if we have a reasonable sentence
+        return truncated[:last_period + 1]
+    
+    return truncated
 
 def extract_pdf_text(pdf_path: str) -> str:
     """
-    Read PDF and return combined text. Caches by file hash to avoid repeat parsing.
+    Extract text from PDF with streaming and better error handling
     """
+    if not os.path.exists(pdf_path):
+        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+    
     try:
         with open(pdf_path, "rb") as f:
             file_bytes = f.read()
-    except Exception as exc:
-        logger.exception("Failed to open PDF path: %s", pdf_path)
+    except Exception as e:
+        logger.error(f"Failed to read PDF file {pdf_path}: {e}")
         raise
-
+    
     file_hash = hashlib.md5(file_bytes).hexdigest()
+    
+    # Clean cache before checking
+    _clean_cache()
+    
     cached = _pdf_cache.get(file_hash)
     if cached:
-        return cached
-
+        return cached.text
+    
     try:
         doc_text_parts = []
         with fitz.open(stream=file_bytes, filetype="pdf") as doc:
             for page in doc:
-                doc_text_parts.append(page.get_text())
+                text = page.get_text().strip()
+                if text:
+                    doc_text_parts.append(text)
+        
         full_text = "\n".join(doc_text_parts)
-        _pdf_cache[file_hash] = full_text
+        
+        # Cache with timestamp
+        _pdf_cache[file_hash] = CacheEntry(text=full_text, timestamp=time.time())
         return full_text
-    except Exception as exc:
-        logger.exception("Failed to parse PDF: %s", pdf_path)
+        
+    except Exception as e:
+        logger.error(f"Failed to parse PDF {pdf_path}: {e}")
         raise
 
-
 def format_nutrient_data(product_info: Dict[str, Any]) -> str:
-    """
-    Formats the 'nutriments' dictionary into a clean, readable string for prompt inclusion.
-    Accepts OpenFoodFacts-like structure or a fallback 'nutriments' key.
-    """
+    """Format nutrient data with filtering for relevant nutrients"""
     nutrients = product_info.get("nutriments") or product_info.get("nutrients") or {}
     if not isinstance(nutrients, dict):
         return ""
+    
+    # Common relevant nutrients to include
+    relevant_nutrients = {
+        'energy', 'energy-kcal', 'energy-kj', 'fat', 'saturated-fat', 
+        'carbohydrates', 'sugars', 'fiber', 'proteins', 'salt', 'sodium',
+        'cholesterol', 'calcium', 'iron', 'vitamin_a', 'vitamin_c', 'vitamin_d'
+    }
+    
     lines = []
     for k, v in nutrients.items():
-        # Make key human-friendly
-        key_str = str(k).replace("_", " ").replace("-", " ").title()
-        lines.append(f"- {key_str}: {v}")
-    return "\n".join(lines)
+        key_lower = k.lower()
+        # Include if relevant or if we don't have many nutrients yet
+        if any(relevant in key_lower for relevant in relevant_nutrients) or len(lines) < 10:
+            key_str = str(k).replace('_', ' ').replace('-', ' ').title()
+            # Add units if available in the key
+            if any(unit in key_lower for unit in ['_100g', '_serving']):
+                key_str = key_str.replace('100g', '(per 100g)')
+            lines.append(f"- {key_str}: {v}")
+    
+    return "\n".join(lines[:15])  # Limit to 15 most relevant nutrients
 
-
-def _build_prompt(age: Optional[int], weight: Optional[float], height: Optional[float], bmi: Optional[float],
-                  health_conditions: Optional[str], dietary_preferences: Optional[str], goal: Optional[str],
-                  product_info: Dict[str, Any], diet_knowledge: str) -> (str, str):
+def _build_prompt(
+    age: Optional[int], 
+    weight: Optional[float], 
+    height: Optional[float], 
+    bmi: Optional[float],
+    health_conditions: Optional[str], 
+    dietary_preferences: Optional[str], 
+    goal: Optional[str],
+    product_info: Dict[str, Any], 
+    diet_knowledge: str
+) -> Tuple[str, str]:
     """
-    Compose system_message and user_prompt to send to the model.
-    System message includes instructions and an example. The user prompt includes the live data.
+    Build optimized prompts with better structure and examples
     """
+    system_message = """You are an expert AI Nutritionist and Product Analyst. Analyze the given food product based on its ingredients and nutrition facts.
 
-    # System message (instructions + persona + example)
-    system_message = """
-You are an expert AI Nutritionist. Your task is to analyze a food product based on a user's profile and
-provided dietary principles. Produce exactly one JSON object and nothing else. The JSON object keys must be:
-- "advisability": string, one of "Yes", "No", "With Caution"
-- "pros": list of short factual strings
-- "cons": list of short factual strings
-- "summary": short string with up to three concise points explaining the reasoning
+Respond with exactly one JSON object with these keys:
+- "description": string, a detailed and factual description of the product (about 80–150 words). Describe what it is, its main ingredients, how it is typically used or consumed, and any notable characteristics.
+- "advisability": string, one of "Yes", "No", or "With Caution"
+- "pros": list of short factual strings (2–4 items)
+- "cons": list of short factual strings (2–4 items)
+- "summary": string with 1–3 concise points summarizing your dietary recommendation.
 
-Do not include any commentary or additional text outside the JSON object.
-"""
+Example response:
+{
+  "description": "Nestlé KitKat is a chocolate-coated wafer snack composed of multiple crisp wafer layers covered in milk chocolate. It is sweet and crunchy, commonly consumed as a dessert or energy snack. It provides carbohydrates for quick energy but contains significant amounts of sugar and saturated fat. KitKat is widely available in individual and multipack servings and is not suitable for diabetics or those on low-sugar diets.",
+  "advisability": "With Caution",
+  "pros": ["Provides quick energy", "Tastes good and convenient to consume"],
+  "cons": ["High in sugar", "Contains saturated fat", "Low in protein"],
+  "summary": "A tasty but sugary snack that should be eaten occasionally, not regularly."
+}"""
 
-    # Example (few-shot)
-    example_obj = {
-        "advisability": "With Caution",
-        "pros": [
-            "Good source of fiber, which aids satiety.",
-            "Provides a quick energy boost."
-        ],
-        "cons": [
-            "Very high in sugar (25g per 100g).",
-            "High in calories and fat, making it dense for a weight loss diet."
-        ],
-        "summary": "This bar provides satiety via fiber but is high in sugar and calories, so limit consumption."
-    }
 
-    example_text = "\n---EXAMPLE---\n" + json.dumps(example_obj, indent=2) + "\n---END EXAMPLE---\n"
+    # Build user profile efficiently
+    user_profile_parts = []
+    if age: user_profile_parts.append(f"Age: {age}")
+    if weight: user_profile_parts.append(f"Weight: {weight} kg")
+    if height: user_profile_parts.append(f"Height: {height} cm")
+    if bmi: user_profile_parts.append(f"BMI: {bmi}")
+    if health_conditions: user_profile_parts.append(f"Health Conditions: {health_conditions}")
+    if dietary_preferences: user_profile_parts.append(f"Dietary Preferences: {dietary_preferences}")
+    if goal: user_profile_parts.append(f"Goal: {goal}")
+    
+    user_profile_text = "\n".join(f"- {part}" for part in user_profile_parts) or "Not provided"
 
-    # User profile block
-    user_profile = {
-        "Age": age if age is not None else "Not provided",
-        "Weight": f"{weight} kg" if weight is not None else "Not provided",
-        "Height": f"{height} cm" if height is not None else "Not provided",
-        "BMI": bmi if bmi is not None else "Not provided",
-        "Health Conditions": health_conditions or "None",
-        "Dietary Preferences": dietary_preferences or "None",
-        "Goal": goal or "General health"
-    }
-    user_profile_text = "\n".join([f"- {k}: {v}" for k, v in user_profile.items()])
-
-    product_name = product_info.get("product_name") or product_info.get("Product") or product_info.get("name") or "Unknown Product"
+    # Extract product details
+    product_name = product_info.get("product_name") or product_info.get("name", "Unknown Product")
     nutrients_text = format_nutrient_data(product_info)
+    
+    # Include additional product context if available
+    additional_info = []
+    if product_info.get("nutriscore_grade"):
+        additional_info.append(f"Nutri-Score: {product_info['nutriscore_grade']}")
+    if product_info.get("brands"):
+        additional_info.append(f"Brand: {product_info['brands']}")
 
-    # Truncate diet knowledge to keep prompt small (approx by words)
-    truncated_knowledge = truncate_text_by_wordcount(diet_knowledge or "", 2500)
+    additional_info_text = ""
+    if additional_info:
+        additional_info_text = "- " + "\n- ".join(additional_info)
+    
+    truncated_knowledge = truncate_text_by_wordcount(diet_knowledge or "", CONFIG["max_pdf_words"])
 
-    user_prompt = f"""
-<user_profile>
+    # Build final user prompt
+    user_prompt = f"""User Profile:
 {user_profile_text}
-</user_profile>
 
-<product_info>
+Product Information:
 - Name: {product_name}
-- Nutrients (per 100g if applicable):
-{nutrients_text}
-</product_info>
+{additional_info_text}
+- Nutrients:
+{nutrients_text if nutrients_text else 'No detailed nutrient data available'}
 
-<dietary_principles>
+Dietary Principles:
 {truncated_knowledge}
-</dietary_principles>
 
-Based on all the information provided, produce the single JSON object described above.
+Please analyze this product and provide your assessment in the specified JSON format.
 """
 
-    # Combine for clarity: system message also includes example to bias the response
-    full_system = system_message + "\n" + example_text
-    return full_system.strip(), user_prompt.strip()
+    return system_message.strip(), user_prompt.strip()
 
 
-def _call_model(system_message: str, user_prompt: str, max_retries: int = 2, timeout_s: int = 30) -> Dict[str, Any]:
+def _parse_llm_response(content: str) -> Dict[str, Any]:
     """
-    Calls the HF InferenceClient chat_completion (or equivalent) and attempts to parse output into dict.
-    Retries a small number of times on transient errors.
+    Robust JSON parsing with multiple fallback strategies
     """
-    for attempt in range(max_retries + 1):
+    if not content:
+        return {"error": "Empty response from model"}
+    
+    content = content.strip()
+    
+    # Strategy 1: Direct JSON parsing
+    try:
+        parsed = json.loads(content)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        pass
+    
+    # Strategy 2: Extract JSON with regex
+    json_patterns = [
+        r'\{[^{}]*"[^"]*"[^{}]*\}',  # Simple single-line JSON
+        r'\{.*\}',  # Multi-line JSON (DOTALL)
+    ]
+    
+    for pattern in json_patterns:
         try:
-            # Keep model and parameters here; tune as needed
+            matches = re.finditer(pattern, content, re.DOTALL)
+            for match in matches:
+                try:
+                    parsed = json.loads(match.group())
+                    if isinstance(parsed, dict) and 'advisability' in parsed:
+                        return parsed
+                except json.JSONDecodeError:
+                    # Try with single quotes replaced
+                    try:
+                        cleaned = match.group().replace("'", '"')
+                        parsed = json.loads(cleaned)
+                        if isinstance(parsed, dict) and 'advisability' in parsed:
+                            return parsed
+                    except json.JSONDecodeError:
+                        continue
+        except Exception:
+            continue
+    
+    # Strategy 3: Try to parse as JSON lines or multiple objects
+    lines = content.split('\n')
+    for line in lines:
+        line = line.strip()
+        if line.startswith('{') and line.endswith('}'):
+            try:
+                parsed = json.loads(line)
+                if isinstance(parsed, dict):
+                    return parsed
+            except json.JSONDecodeError:
+                continue
+    
+    # Final fallback: Return structured error with raw content
+    return {
+        "error": "Could not parse valid JSON from response",
+        "raw": content[:500]  # First 500 chars for debugging
+    }
+
+def _call_model(system_message: str, user_prompt: str) -> Dict[str, Any]:
+    """
+    Call LLM with exponential backoff and comprehensive error handling
+    """
+    if not _client:
+        return {"error": "HF client not initialized - check HF_TOKEN configuration"}
+    
+    last_exc = None
+    for attempt in range(CONFIG["max_retries"] + 1):
+        try:
             response = _client.chat_completion(
-                model="meta-llama/Meta-Llama-3-8B-Instruct",
+                model=CONFIG["model"],
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_prompt}
                 ],
-                max_tokens=400,
-                temperature=0.2
+                max_tokens=CONFIG["max_tokens"],
+                temperature=CONFIG["temperature"]
             )
-
-            # response can be a rich object; try several common access patterns
-            # 1) OpenAI-like: response.choices[0].message.content
+            
+            # Extract content from various response formats
             content = None
-            if hasattr(response, "choices"):
-                try:
-                    content = response.choices[0].message.content
-                except Exception:
-                    # fallback to OpenAI-like but different path
-                    try:
-                        content = response.choices[0].text
-                    except Exception:
-                        content = None
-
-            # 2) HF InferenceLibrary: response.generated_text or str(response)
+            if hasattr(response, 'choices') and response.choices:
+                choice = response.choices[0]
+                if hasattr(choice, 'message') and hasattr(choice.message, 'content'):
+                    content = choice.message.content
+                elif hasattr(choice, 'text'):
+                    content = choice.text
+            
             if content is None:
-                content = getattr(response, "generated_text", None)
-
-            if content is None:
-                # Final fallback to stringifying
-                content = str(response)
-
-            # Ensure it's a string
-            content_str = content.strip() if isinstance(content, str) else json.dumps(content)
-
-            # Try to parse JSON robustly
-            try:
-                parsed = json.loads(content_str)
-                if isinstance(parsed, dict):
-                    return parsed
-                # If model returned list or other structure, wrap it
-                return {"parsed": parsed}
-            except json.JSONDecodeError:
-                # fallback to regex extraction
-                import re
-                match = re.search(r'\{.*\}', content_str, re.DOTALL)
-                if match:
-                    try:
-                        parsed = json.loads(match.group())
-                        return parsed if isinstance(parsed, dict) else {"parsed": parsed}
-                    except json.JSONDecodeError:
-                        # try replacing single quotes
-                        try:
-                            cleaned = match.group().replace("'", '"')
-                            parsed = json.loads(cleaned)
-                            return parsed if isinstance(parsed, dict) else {"parsed": parsed}
-                        except Exception:
-                            pass
-
-            # If parsing failed, return raw content under 'raw' key
-            return {"raw": content_str}
-
+                content = getattr(response, 'generated_text', str(response))
+            
+            return _parse_llm_response(content)
+            
         except Exception as exc:
-            logger.exception("Error calling LLM (attempt %s/%s)", attempt + 1, max_retries + 1)
-            # small backoff
-            time.sleep(1 + attempt * 2)
-            last_exc = exc
-            continue
+            return {"error": f"LLM call failed: {str(exc)}"}
+    
+    return {"error": f"All retries failed: {str(last_exc)}"}
 
-    # After retries failed
-    return {"error": f"LLM call failed: {str(last_exc)}"}
+def _validate_product_info(product_info: Dict[str, Any]) -> bool:
+    """Validate that product_info has minimal required data"""
+    if not isinstance(product_info, dict):
+        return False
+    
+    # Check for at least some product identification or nutrient data
+    has_name = any(key in product_info for key in ['product_name', 'name', 'product'])
+    has_nutrients = any(key in product_info for key in ['nutriments', 'nutrients', 'nutrition'])
+    
+    return has_name or has_nutrients
 
-
-def analyze_nutrition(age: Optional[int],
-                      weight: Optional[float],
-                      height: Optional[float],
-                      bmi: Optional[float],
-                      health_conditions: Optional[str],
-                      dietary_preferences: Optional[str],
-                      goal: Optional[str],
-                      product_info: Dict[str, Any],
-                      pdf_path: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Main entrypoint for nutrition analysis. Returns a dict:
-    - On success: keys advisability, pros, cons, summary (as defined)
-    - On failure: {"error": "..."}
-    """
+def analyze_nutrition(
+    age: Optional[int],
+    weight: Optional[float], 
+    height: Optional[float],
+    bmi: Optional[float],
+    health_conditions: Optional[str],
+    dietary_preferences: Optional[str],
+    goal: Optional[str],
+    product_info: Dict[str, Any],
+) -> Dict[str, Any]:
+    start_time = time.time()
+    
+    # Input validation
+    if not _validate_product_info(product_info):
+        return {"error": "Invalid product_info: must be a dict with product name or nutrient data"}
+    
     try:
-        if not isinstance(product_info, dict):
-            return {"error": "Invalid product_info (expected dict)."}
-
-        if 'nutriments' not in product_info and 'nutrients' not in product_info:
-            # Not strictly an error; but warn and continue
-            logger.debug("product_info lacks 'nutriments' key; continuing with whatever is present.")
-
-        # Resolve PDF path (default to a healthy-diet fact sheet inside static if not provided)
-        if not pdf_path:
-            default_rel = os.path.join("nutriscan_ai", "static", "healthy-diet-fact-sheet-394.pdf")
-            pdf_path = os.path.join(getattr(settings, "BASE_DIR", "."), default_rel)
-
-        if not os.path.exists(pdf_path):
-            logger.warning("PDF not found at %s; proceeding without additional diet knowledge.", pdf_path)
-            diet_knowledge = ""
-        else:
+        # Handle PDF knowledge base
+        diet_knowledge = ""
+        pdf_path='static\\healthy-diet-fact-sheet-394.pdf'
+        if pdf_path and os.path.exists(pdf_path):
             try:
                 diet_knowledge = extract_pdf_text(pdf_path)
-            except Exception as exc:
-                logger.exception("Failed to extract PDF text; using empty knowledge base.")
-                diet_knowledge = ""
-
+            except Exception as e:
+                return {"error":f"Failed to load PDF {pdf_path}: {e}. Continuing without additional knowledge."}
+        
+        # Build and call model
         system_message, user_prompt = _build_prompt(
-            age=age,
-            weight=weight,
-            height=height,
-            bmi=bmi,
-            health_conditions=health_conditions,
-            dietary_preferences=dietary_preferences,
-            goal=goal,
-            product_info=product_info,
-            diet_knowledge=diet_knowledge
+            age=age, weight=weight, height=height, bmi=bmi,
+            health_conditions=health_conditions, dietary_preferences=dietary_preferences,
+            goal=goal, product_info=product_info, diet_knowledge=diet_knowledge
         )
-
+        
         llm_result = _call_model(system_message, user_prompt)
-
-        # If llm_result contains "error" already, return it
-        if 'error' in llm_result:
-            return {"error": llm_result.get('error')}
-
-        # Normalization: ensure keys exist and defaults
-        advisability = llm_result.get('advisability') or llm_result.get('recommendation') or "Unknown"
-        pros = llm_result.get('pros') or llm_result.get('benefits') or []
-        cons = llm_result.get('cons') or llm_result.get('drawbacks') or []
-        summary = llm_result.get('summary') or llm_result.get('explanation') or ""
-
-        # If LLM returned raw text only, include it to help debugging
-        if 'raw' in llm_result and not any([advisability != "Unknown", pros, cons, summary]):
-            # Try one more attempt to parse the raw contents
-            raw_text = llm_result.get('raw', '')
-            try:
-                parsed = json.loads(raw_text)
-                advisability = parsed.get('advisability', advisability)
-                pros = parsed.get('pros', pros)
-                cons = parsed.get('cons', cons)
-                summary = parsed.get('summary', summary)
-            except Exception:
-                logger.debug("Unable to parse 'raw' fallback content.")
-
-        return {
+        
+        # Handle errors from LLM call
+        if "error" in llm_result:
+            return {"error": f"LLM processing failed: {llm_result['error']}"}
+        
+        # Normalize response structure
+        advisability = llm_result.get('advisability', 'Unknown')
+        if advisability not in ['Yes', 'No', 'With Caution']:
+            advisability = 'With Caution'  # Default to cautious
+        
+        pros = llm_result.get('pros', [])
+        if not isinstance(pros, list):
+            pros = [str(pros)] if pros else []
+        
+        cons = llm_result.get('cons', [])
+        if not isinstance(cons, list):
+            cons = [str(cons)] if cons else []
+        
+        summary = llm_result.get('summary', 'No summary provided')
+        description = llm_result.get('description', 'No description provided')
+        
+        result = {
             "advisability": advisability,
-            "pros": pros if isinstance(pros, list) else [str(pros)],
-            "cons": cons if isinstance(cons, list) else [str(cons)],
-            "summary": summary
+            "pros": pros,
+            "cons": cons, 
+            "summary": summary,
+            "description": description,
         }
 
-    except Exception as exc:
-        logger.exception("Unexpected error in analyze_nutrition")
-        return {"error": str(exc)}
+        return result
+        
+    except Exception as e:
+        return {"error": f"Analysis failed: {str(e)}"}

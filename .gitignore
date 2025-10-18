@@ -1,4 +1,19 @@
-# Python
+# --- Environment & Credentials ---
+# Ignore environment variables, secrets, and local settings
+.env*
+local_settings.py
+*.pem
+*.key
+*.crt
+
+# --- Virtual Environment ---
+# Ignore virtual environment folders
+venv/
+env/
+ENV/
+
+# --- Python & Packaging ---
+# Ignore cache, build artifacts, and distribution packages
 __pycache__/
 *.py[cod]
 *$py.class
@@ -20,49 +35,27 @@ wheels/
 .installed.cfg
 *.egg
 
-# Django
+# --- Django ---
+# Ignore logs, database files, and collected static/media files
 *.log
 *.pot
-*.pyc
 db.sqlite3
 db.sqlite3-journal
-media/
-static/admin/
-local_settings.py
+/staticfiles/
+/media/
 
-# Virtual Environment
-venv/
-env/
-ENV/
-.env
-
-# VS Code
+# --- IDE & Editor Config ---
+# Ignore configs for VS Code, PyCharm, etc.
 .vscode/
-*.code-workspace
-.history/
-
-# PyCharm
 .idea/
+.history/
+*.code-workspace
 *.iws
 *.iml
 *.ipr
 
-# Project specific
-*.pem
-*.key
-*.crt
-.env.local
-.env.development
-.env.test
-.env.production
-
-# System Files
-.DS_Store
-Thumbs.db
-*.swp
-*~
-
-# Coverage & Test
+# --- Testing & Coverage ---
+# Ignore test reports and coverage data
 htmlcov/
 .tox/
 .nox/
@@ -77,47 +70,18 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Dependency directories
+# --- Frontend Dependencies ---
 node_modules/
 jspm_packages/
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Jupyter Notebook
+# --- Jupyter Notebook ---
 .ipynb_checkpoints
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local development settings
-local_settings.py
-*.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Database
-*.sqlite3
-*.sqlite3-journal
-*.db
+# --- OS & System Files ---
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+# Virtual Environment
+nutriscan_env/

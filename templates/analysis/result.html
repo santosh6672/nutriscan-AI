@@ -11,23 +11,70 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
 </head>
 <body>
 
     <div class="container">
-        <header class="page-header">
+        <header class="page-header animate__animated animate__fadeInDown">
             <h1>Analysis Result</h1>
-            <p>Here's the detailed breakdown of <strong>{{ product.product_name }}</strong> based on your profile, {{ user.first_name }}.</p>
+            <p>Here's the detailed breakdown of <strong>{{ product.product_name }}</strong> based on your profile, {{ user.first_name|default:"User" }}.</p>
+            {% if barcode %}
+            <div class="barcode-badge">
+                <i class="fas fa-barcode"></i> Barcode: <strong>{{ barcode }}</strong>
+            </div>
+            {% endif %}
         </header>
+
+        <!-- Error State -->
+        {% if analysis.error %}
+        <div class="error-state animate__animated animate__fadeIn">
+            <div class="error-card">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h2>Analysis Failed</h2>
+                <p>{{ analysis.error }}</p>
+                <a href="{% url 'scan_product' %}" class="btn-retry">
+                    <i class="fas fa-redo"></i> Try Again
+                </a>
+            </div>
+        </div>
+        {% else %}
 
         <main class="main-content">
 
-            <div class="card combo-card product-score-card">
+            <!-- Advisability Banner -->
+            <div class="advisability-banner advisability-{{ analysis.advisability|lower|cut:' ' }} animate__animated animate__fadeIn">
+                <div class="banner-content">
+                    <div class="banner-icon">
+                        {% if analysis.advisability == 'Yes' %}
+                        <i class="fas fa-check-circle"></i>
+                        {% elif analysis.advisability == 'No' %}
+                        <i class="fas fa-times-circle"></i>
+                        {% else %}
+                        <i class="fas fa-exclamation-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="banner-text">
+                        <h2>Recommendation: {{ analysis.advisability }}</h2>
+                        <p>{{ analysis.summary }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product & Score Card -->
+            <div class="card combo-card product-score-card animate__animated animate__fadeInLeft">
                 <div class="product-info">
-                    <h2>{{ product.product_name }}</h2>
-                    <p class="brand">{{ product.brands }}</p>
+                    <h2>{{ product.product_name|default:"Unknown Product" }}</h2>
+                    {% if product.brands %}
+                    <p class="brand">Brand: {{ product.brands }}</p>
+                    {% endif %}
+                    
                     {% if product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.product_name }}" class="product-image">
+                    <img src="{{ product.image_url }}" alt="{{ product.product_name }}" class="product-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="product-image-placeholder" style="display: none;">
+                        <i class="fas fa-image"></i>
+                        <p>Image unavailable</p>
+                    </div>
                     {% else %}
                     <div class="product-image-placeholder">
                         <i class="fas fa-image"></i>
@@ -36,84 +83,177 @@
                     {% endif %}
                 </div>
                 <div class="score-info">
-                    <h3>Nutri-Score Grade</h3>
+                    <h3>Nutrition Score</h3>
+                    {% if product.nutriscore_grade and product.nutriscore_grade != 'N/A' %}
                     <div class="nutriscore-badge nutriscore-{{ product.nutriscore_grade|lower }}">
                         <span>{{ product.nutriscore_grade }}</span>
                     </div>
-                    <p class="suitability-reason">Nutri-Score Value: <strong>{{ product.nutriscore_score }}</strong></p>
+                    <p class="suitability-reason">Nutri-Score Value: <strong>{{ product.nutriscore_score|default:"N/A" }}</strong></p>
+                    {% else %}
+                    <div class="nutriscore-badge nutriscore-unknown">
+                        <span>?</span>
+                    </div>
+                    <p class="suitability-reason">Nutrition score not available</p>
+                    {% endif %}
                 </div>
             </div>
 
-            <div class="card combo-card nutrition-pros-cons-card">
+            <!-- Nutrition & Analysis Card -->
+            <div class="card combo-card nutrition-pros-cons-card animate__animated animate__fadeInRight">
                 <div class="nutrition-section">
                     <h3>Nutrition Facts</h3>
                     <p class="serving-info">Values per 100g / 100ml</p>
+                    
+                    {% if product.nutriments %}
                     <table class="nutrition-table">
                         <tbody>
                             {% for key, name in nutrient_map.items %}
-                                {% with nutrient_key_100g=key|add:"_100g" nutrient_unit=key|add:"_unit" %}
+                                {% with nutrient_key_100g=key|add:"_100g" %}
                                     {% if product.nutriments|get_item:nutrient_key_100g is not None %}
                                         <tr>
                                             <td>{{ name }}</td>
                                             <td class="value">
                                                 {{ product.nutriments|get_item:nutrient_key_100g|floatformat:2 }} 
-                                                {{ product.nutriments|get_item:nutrient_unit }}
+                                                {{ product.nutriments|get_item:key|add:"_unit"|default:"" }}
                                             </td>
                                         </tr>
                                     {% endif %}
                                 {% endwith %}
                             {% endfor %}
+                            
+                            <!-- Fallback for direct nutrient keys -->
+                            {% for key, name in nutrient_map.items %}
+                                {% if product.nutriments|get_item:key is not None and key|add:"_100g" not in product.nutriments %}
+                                <tr>
+                                    <td>{{ name }}</td>
+                                    <td class="value">
+                                        {{ product.nutriments|get_item:key|floatformat:2 }} 
+                                        {{ product.nutriments|get_item:key|add:"_unit"|default:"" }}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
                         </tbody>
                     </table>
+                    {% else %}
+                    <div class="no-nutrition-data">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Detailed nutrition information not available for this product.</p>
+                    </div>
+                    {% endif %}
                 </div>
+                
                 <div class="pros-cons-section">
                     <div class="pros">
-                        <h4><i class="fas fa-check-circle"></i> Pros</h4>
+                        <h4><i class="fas fa-check-circle"></i> Benefits</h4>
+                        {% if analysis.pros %}
                         <ul>
                             {% for pro in analysis.pros %}
                                 <li>{{ pro }}</li>
                             {% endfor %}
                         </ul>
+                        {% else %}
+                        <p class="no-data">No specific benefits identified.</p>
+                        {% endif %}
                     </div>
+                    
                     <div class="cons">
-                        <h4><i class="fas fa-times-circle"></i> Cons</h4>
+                        <h4><i class="fas fa-times-circle"></i> Concerns</h4>
+                        {% if analysis.cons %}
                         <ul>
                             {% for con in analysis.cons %}
                                 <li>{{ con }}</li>
                             {% endfor %}
                         </ul>
+                        {% else %}
+                        <p class="no-data">No major concerns identified.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <div class="card combo-card summary-image-card">
+            <!-- Additional Information Card -->
+            <div class="card combo-card summary-image-card animate__animated animate__fadeInUp">
                 <div class="summary-section">
-                    <h4>AI Summary</h4>
-                    <p>{{ analysis.summary }}</p>
+                    <h4>Detailed Analysis</h4>
+                    <p>{{ analysis.description|default:"No detailed analysis available." }}</p>
+                    
+                    {% if product.categories %}
+                    <div class="product-categories">
+                        <h5>Product Categories</h5>
+                        <p>{{ product.categories }}</p>
+                    </div>
+                    {% endif %}
                 </div>
-                {% if scan_image %}
+                
                 <div class="image-section">
+                    {% if scan_image %}
                     <h4>Scanned Barcode</h4>
-                    <img src="data:image/jpeg;base64,{{ scan_image }}" alt="Scanned Barcode">
+                    <img src="data:image/jpeg;base64,{{ scan_image }}" alt="Scanned Barcode" class="scanned-barcode">
+                    <p class="image-caption">Detected barcode regions highlighted</p>
+                    {% elif barcode %}
+                    <h4>Barcode Information</h4>
+                    <div class="barcode-display">
+                        <i class="fas fa-barcode fa-3x"></i>
+                        <p class="barcode-number">{{ barcode }}</p>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
 
-            {% if analysis.alternatives %}
-            <div class="card alternatives-card">
-                <h4><i class="fas fa-lightbulb"></i> Healthier Alternatives</h4>
-                <ul>
-                    {% for alt in analysis.alternatives %}
-                        <li>{{ alt }}</li>
-                    {% endfor %}
-                </ul>
+            <!-- User Profile Context -->
+            <div class="card profile-context-card animate__animated animate__fadeInUp">
+                <h4><i class="fas fa-user-circle"></i> Analysis Context</h4>
+                <div class="profile-details">
+                    <div class="profile-item">
+                        <span class="label">Age:</span>
+                        <span class="value">{{ user.age|default:"Not provided" }}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="label">Weight:</span>
+                        <span class="value">{{ user.weight_kg|default:"Not provided" }} kg</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="label">Height:</span>
+                        <span class="value">{{ user.height_cm|default:"Not provided" }} cm</span>
+                    </div>
+                    {% if user.health_conditions or user.health_issues %}
+                    <div class="profile-item">
+                        <span class="label">Health Conditions:</span>
+                        <span class="value">{{ user.health_conditions|default:user.health_issues|default:"None" }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.dietary_preferences %}
+                    <div class="profile-item">
+                        <span class="label">Dietary Preferences:</span>
+                        <span class="value">{{ user.dietary_preferences }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.goal or user.goals %}
+                    <div class="profile-item">
+                        <span class="label">Goal:</span>
+                        <span class="value">{{ user.goal|default:user.goals|default:"General health" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            {% endif %}
 
         </main>
+        {% endif %} <!-- End of non-error state -->
         
-        <footer class="page-footer">
-            <a href="{% url 'scan_product' %}" class="btn-scan-again">Scan Another Product</a>
+        <footer class="page-footer animate__animated animate__fadeInUp">
+            <div class="footer-actions">
+                <a href="{% url 'scan_product' %}" class="btn-scan-again">
+                    <i class="fas fa-qrcode"></i> Scan Another Product
+                </a>
+                <button onclick="window.print()" class="btn-print">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+            </div>
+            <p class="disclaimer">
+                This analysis is generated by AI and should not replace professional medical advice. 
+                Always consult with healthcare professionals for dietary decisions.
+            </p>
         </footer>
     </div>
 
