@@ -1,7 +1,5 @@
 # 🍏 NutriScan AI: Your Personal AI Nutritionist
 
-![NutriScan AI Showcase](https://your-image-host.com/nutriscan_showcase.gif)
-_Replace the link above with a GIF of your app in action!_
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python" alt="Python Version">
