@@ -37,10 +37,23 @@ NutriScan AI bridges that gap by combining:
 
 ---
 
-Screenshots
+## Screenshots
 
-Home| Scan| Result
-"Home" (nutriscan-AI/static/images/home.png)| "Scan" ((nutriscan-AI/static/images/pscan.png)| "Result" (static/images/result.png)
+| Home | Scan | Result |
+|------|------|--------|
+| 
+
+![Home](static/images/home.png)
+
+ | 
+
+![Scan](static/images/pscan.png)
+
+ | 
+
+![Result](static/images/result.png)
+
+ |
 
 ---
 
