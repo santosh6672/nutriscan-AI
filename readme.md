@@ -1,16 +1,16 @@
-NutriScan AI
+# NutriScan AI
 
 A Django web application that scans packaged food barcodes and generates
 personalised nutrition recommendations using an LLM, grounded in the user's
 health profile.
 
-«Disclaimer: NutriScan AI is an informational tool only. Its output is
+«**Disclaimer**: NutriScan AI is an informational tool only. Its output is
 not a substitute for advice from a registered dietitian or medical
 professional.»
 
 ---
 
-What It Does
+# What It Does
 
 Most nutrition labels are accurate but not useful. Knowing that a biscuit
 contains 28 g of sugar per 100 g doesn't tell a diabetic whether they should
@@ -57,7 +57,7 @@ NutriScan AI bridges that gap by combining:
 
 ---
 
-Tech Stack
+# Tech Stack
 
 Layer| Technology
 Backend| Django 5.2
@@ -73,7 +73,7 @@ Server| Gunicorn
 
 ---
 
-Architecture
+# Architecture
 
 Browser
   │
@@ -100,7 +100,7 @@ Apps
 
 ---
 
-Local Setup
+# Local Setup
 
 Prerequisites
 
@@ -108,7 +108,7 @@ Prerequisites
 - Git
 - Hugging Face API token
 
-Steps
+# Steps
 
 git clone https://github.com/YOUR_USERNAME/nutriscan-ai.git
 cd nutriscan-ai
@@ -134,7 +134,7 @@ Open: http://127.0.0.1:8000/
 
 ---
 
-How to Use
+# How to Use
 
 1. Sign up and complete your profile
 2. Go to Scan page
@@ -144,7 +144,7 @@ How to Use
 
 ---
 
-Project Structure
+P# roject Structure
 
 nutriscan-ai/
 ├── accounts/
@@ -189,7 +189,7 @@ Parser includes fallback handling for inconsistent outputs.
 
 ---
 
-Contributing
+# Contributing
 
 1. Fork the repo
 2. Create a branch
