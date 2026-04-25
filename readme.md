@@ -4,9 +4,9 @@ A Django web application that scans packaged food barcodes and generates
 personalised nutrition recommendations using an LLM, grounded in the user's
 health profile.
 
-«**Disclaimer**: NutriScan AI is an informational tool only. Its output is
+**Disclaimer**: NutriScan AI is an informational tool only. Its output is
 not a substitute for advice from a registered dietitian or medical
-professional.»
+professional.
 
 ---
 
@@ -45,15 +45,10 @@ NutriScan AI bridges that gap by combining:
 
 ![Home](static/images/home.png)
 
- | 
-
 ![Scan](static/images/pscan.png)
-
- | 
 
 ![Result](static/images/result.png)
 
- |
 
 ---
 
